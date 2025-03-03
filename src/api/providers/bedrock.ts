@@ -127,12 +127,28 @@ export class AwsBedrockHandler implements ApiHandler {
 		}
 	}
 
-	getModel(): { id: BedrockModelId; info: ModelInfo } {
+	getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.apiModelId
+
+		// Check if it's a standard model
 		if (modelId && modelId in bedrockModels) {
 			const id = modelId as BedrockModelId
 			return { id, info: bedrockModels[id] }
 		}
+
+		// Check if it's a user-defined model
+		const userDefinedModels = this.options.userDefinedBedrockModels || []
+		const userModel = userDefinedModels.find((model) => model.modelId === modelId)
+
+		if (userModel && userModel.baseModelId in bedrockModels) {
+			// Use the user-defined model ID but inherit capabilities from the base model
+			return {
+				id: userModel.modelId,
+				info: bedrockModels[userModel.baseModelId],
+			}
+		}
+
+		// Fall back to default
 		return {
 			id: bedrockDefaultModelId,
 			info: bedrockModels[bedrockDefaultModelId],

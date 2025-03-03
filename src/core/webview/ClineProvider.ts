@@ -16,7 +16,7 @@ import { getTheme } from "../../integrations/theme/getTheme"
 import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
 import { FirebaseAuthManager, UserInfo } from "../../services/auth/FirebaseAuthManager"
 import { McpHub } from "../../services/mcp/McpHub"
-import { ApiProvider, ModelInfo } from "../../shared/api"
+import { ApiProvider, ModelInfo, UserDefinedBedrockModel } from "../../shared/api"
 import { findLast } from "../../shared/array"
 import { AutoApprovalSettings, DEFAULT_AUTO_APPROVAL_SETTINGS } from "../../shared/AutoApprovalSettings"
 import { BrowserSettings, DEFAULT_BROWSER_SETTINGS } from "../../shared/BrowserSettings"
@@ -1997,6 +1997,11 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 
 		const mcpMarketplaceEnabled = vscode.workspace.getConfiguration("cline").get<boolean>("mcpMarketplace.enabled", true)
 
+		// Get user-defined Bedrock models from settings
+		const userDefinedBedrockModels = vscode.workspace
+			.getConfiguration("cline.bedrock")
+			.get<UserDefinedBedrockModel[]>("userDefinedModels", [])
+
 		return {
 			apiConfiguration: {
 				apiProvider,
@@ -2011,6 +2016,7 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 				awsBedrockUsePromptCache,
 				awsProfile,
 				awsUseProfile,
+				userDefinedBedrockModels,
 				vertexProjectId,
 				vertexRegion,
 				openAiBaseUrl,

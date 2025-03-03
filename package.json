@@ -211,6 +211,28 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Controls whether the MCP Marketplace is enabled."
+				},
+				"cline.bedrock.userDefinedModels": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": [
+							"modelId",
+							"baseModelId"
+						],
+						"properties": {
+							"modelId": {
+								"type": "string",
+								"description": "Custom model ID for AWS Bedrock. Replace `/` with `%2F`. Example: `arn:aws:bedrock:us-west-2:<AWS account ID>:application-inference-profile%2Fxxxxxxxxxxxx`"
+							},
+							"baseModelId": {
+								"type": "string",
+								"description": "Base model ID to inherit capabilities from. Example: `anthropic.claude-3-7-sonnet-20250219-v1:0`"
+							}
+						}
+					},
+					"default": [],
+					"description": "User-defined AWS Bedrock models that inherit capabilities from existing models"
 				}
 			}
 		}

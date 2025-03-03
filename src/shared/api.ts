@@ -18,6 +18,12 @@ export type ApiProvider =
 	| "asksage"
 	| "xai"
 
+// Interface for user-defined Bedrock models
+export interface UserDefinedBedrockModel {
+	modelId: string
+	baseModelId: BedrockModelId
+}
+
 export interface ApiHandlerOptions {
 	apiModelId?: string
 	apiKey?: string // anthropic
@@ -36,6 +42,7 @@ export interface ApiHandlerOptions {
 	awsBedrockUsePromptCache?: boolean
 	awsUseProfile?: boolean
 	awsProfile?: string
+	userDefinedBedrockModels?: UserDefinedBedrockModel[]
 	vertexProjectId?: string
 	vertexRegion?: string
 	openAiBaseUrl?: string

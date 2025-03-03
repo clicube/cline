@@ -101,6 +101,8 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		return normalizeApiConfiguration(apiConfiguration)
 	}, [apiConfiguration])
 
+	const allBedrockModels = useMemo(() => getAllBedrockModels(apiConfiguration), [apiConfiguration])
+
 	// Poll ollama/lmstudio models
 	const requestLocalModels = useCallback(() => {
 		if (selectedProvider === "ollama") {
@@ -1242,7 +1244,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 								<span style={{ fontWeight: 500 }}>Model</span>
 							</label>
 							{selectedProvider === "anthropic" && createDropdown(anthropicModels)}
-							{selectedProvider === "bedrock" && createDropdown(bedrockModels)}
+							{selectedProvider === "bedrock" && createDropdown(allBedrockModels)}
 							{selectedProvider === "vertex" && createDropdown(vertexModels)}
 							{selectedProvider === "gemini" && createDropdown(geminiModels)}
 							{selectedProvider === "openai-native" && createDropdown(openAiNativeModels)}
@@ -1255,6 +1257,12 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 
 						{((selectedProvider === "anthropic" && selectedModelId === "claude-3-7-sonnet-20250219") ||
 							(selectedProvider === "bedrock" && selectedModelId === "anthropic.claude-3-7-sonnet-20250219-v1:0") ||
+							(selectedProvider === "bedrock" &&
+								isUserDefinedBedrockBaseModel(
+									apiConfiguration,
+									selectedModelId,
+									"anthropic.claude-3-7-sonnet-20250219-v1:0",
+								)) ||
 							(selectedProvider === "vertex" && selectedModelId === "claude-3-7-sonnet@20250219")) && (
 							<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
 						)}
@@ -1454,7 +1462,7 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 		case "anthropic":
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 		case "bedrock":
-			return getProviderData(bedrockModels, bedrockDefaultModelId)
+			return getProviderData(getAllBedrockModels(apiConfiguration), bedrockDefaultModelId)
 		case "vertex":
 			return getProviderData(vertexModels, vertexDefaultModelId)
 		case "gemini":
@@ -1515,6 +1523,30 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration): 
 		default:
 			return getProviderData(anthropicModels, anthropicDefaultModelId)
 	}
+}
+
+function getAllBedrockModels(apiConfiguration: ApiConfiguration | undefined): Record<string, ModelInfo> {
+	// Combine standard models with user-defined models
+	const allBedrockModels: Record<string, ModelInfo> = { ...bedrockModels }
+	const userDefinedModels = apiConfiguration?.userDefinedBedrockModels || []
+	// Add user-defined models with inherited info
+	userDefinedModels.forEach((userModel) => {
+		if (userModel.baseModelId in bedrockModels) {
+			const baseModelInfo = bedrockModels[userModel.baseModelId as keyof typeof bedrockModels]
+			allBedrockModels[userModel.modelId] = {
+				...baseModelInfo,
+			}
+		}
+	})
+	return allBedrockModels
+}
+
+function isUserDefinedBedrockBaseModel(
+	apiConfiguration: ApiConfiguration | undefined,
+	modelId: string,
+	baseModelId: string,
+): boolean {
+	return apiConfiguration?.userDefinedBedrockModels?.find((model) => model.modelId === modelId)?.baseModelId === baseModelId
 }
 
 export default memo(ApiOptions)
